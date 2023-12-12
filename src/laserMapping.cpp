@@ -946,7 +946,12 @@ int main(int argc, char** argv)
             bool nearest_search_en = true; //
 
             t2 = omp_get_wtime();
-            
+            /*** transformed current frame by predicted pose ***/
+            state_point = kf.get_x();
+            for(int i = 0; i < feats_down_size; i++)
+            {
+                pointBodyToWorld(&(feats_down_body->points[i]), &(feats_down_world->points[i]));
+            }
             /*** iterated state estimation ***/
             double t_update_start = omp_get_wtime();
             double solve_H_time = 0;
