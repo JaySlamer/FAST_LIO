@@ -958,11 +958,9 @@ int main(int argc, char** argv)
                 }
                 kf.update_iterated_dyn_share_modified(LASER_POINT_COV, solve_H_time);
                 auto state_point_after = kf.get_x();
-                auto rotation_diff = SO3::log(state_point.rot.inverse()*state_point_after.rot);
-                auto translation_diff = state_point.pos - state_point_after.pos;
-                double d_r = std::sqrt(rotation_diff[0]*rotation_diff[0]+rotation_diff[1]*rotation_diff[1]+rotation_diff[2]*rotation_diff[2]);
-                double d_p = std::sqrt(translation_diff[0]*translation_diff[0]+translation_diff[1]*translation_diff[1]+translation_diff[2]*translation_diff[2]);
-                if(d_r<0.05 && d_p<0.05) break;
+                double dr = (SO3::log(state_point.rot.inverse()*state_point_after.rot)).norm();
+                double dp = (state_point.pos - state_point_after.pos).norm();
+                if(dr<0.002 && dp<0.005) break;
             }
             state_point = kf.get_x();
             euler_cur = SO3ToEuler(state_point.rot);
