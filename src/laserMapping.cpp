@@ -946,11 +946,22 @@ int main(int argc, char** argv)
             bool nearest_search_en = true; //
 
             t2 = omp_get_wtime();
-            
             /*** iterated state estimation ***/
             double t_update_start = omp_get_wtime();
             double solve_H_time = 0;
-            kf.update_iterated_dyn_share_modified(LASER_POINT_COV, solve_H_time);
+            for(int i=0; i<10;i++)
+            {
+                state_point = kf.get_x();
+                for(int i = 0; i < feats_down_size; i++)
+                {
+                    pointBodyToWorld(&(feats_down_body->points[i]), &(feats_down_world->points[i]));
+                }
+                kf.update_iterated_dyn_share_modified(LASER_POINT_COV, solve_H_time);
+                auto state_point_after = kf.get_x();
+                double dr = (SO3::log(state_point.rot.inverse()*state_point_after.rot)).norm();
+                double dp = (state_point.pos - state_point_after.pos).norm();
+                if(dr<0.002 && dp<0.005) break;
+            }
             state_point = kf.get_x();
             euler_cur = SO3ToEuler(state_point.rot);
             pos_lid = state_point.pos + state_point.rot * state_point.offset_T_L_I;
